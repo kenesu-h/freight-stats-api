@@ -40,6 +40,23 @@ class FreightStatsApplicationTests {
 	}
 
 	@Test
+	public void testTradeType() {
+		Assertions.assertEquals(TradeType.IMPORT, TradeType.fromInt(1));
+		Assertions.assertEquals(TradeType.EXPORT, TradeType.fromInt(2));
+		Assertions.assertThrows(IllegalArgumentException.class, () -> TradeType.fromInt(3));
+
+		Assertions.assertEquals("IMPORT", TradeType.IMPORT.toString());
+		Assertions.assertEquals("EXPORT", TradeType.EXPORT.toString());
+	}
+
+	@Test
+	public void testDF() {
+		Assertions.assertEquals(DF.DOMESTIC, DF.valueOf("DOMESTIC"));
+		Assertions.assertEquals(DF.FOREIGN, DF.valueOf("FOREIGN"));
+
+	}
+
+	@Test
 	public void testSerialize() throws JsonProcessingException, ParseException {
 		this.initializeExamples();
 

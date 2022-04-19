@@ -61,7 +61,7 @@ public class FreightStatUtils {
 
     public static Shipment rsToShipment(ResultSet rs) throws SQLException {
         int id = rs.getInt("Shipment_id");
-        TradeType tradeType = TradeType.fromInt(rs.getInt("trade_type"));
+        TradeType tradeType = TradeType.valueOf(rs.getString("trade_type"));
         int commodityId = rs.getInt("CommodityIndex");
         int transportMethod = rs.getInt("TransportationMethod_id");
         int source = rs.getInt("Source");
