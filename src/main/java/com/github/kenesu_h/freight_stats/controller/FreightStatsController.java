@@ -30,7 +30,7 @@ public class FreightStatsController {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder errorBuilder = new StringBuilder();
 
-        queryBuilder.append("select * from shipment");
+        queryBuilder.append("select * from shipment;");
         try {
             model.execute("use `freight-stats`");
             ResultSet rs = model.execute(queryBuilder.toString());
@@ -55,7 +55,7 @@ public class FreightStatsController {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder errorBuilder = new StringBuilder();
 
-        queryBuilder.append("select * from shipment");
+        queryBuilder.append("select * from commodity;");
         try {
             model.execute("use `freight-stats`");
             ResultSet rs = model.execute(queryBuilder.toString());
@@ -80,7 +80,7 @@ public class FreightStatsController {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder errorBuilder = new StringBuilder();
 
-        queryBuilder.append("select * from shipment");
+        queryBuilder.append("select * from transport_method;");
         try {
             model.execute("use `freight-stats`");
             ResultSet rs = model.execute(queryBuilder.toString());
@@ -105,7 +105,7 @@ public class FreightStatsController {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder errorBuilder = new StringBuilder();
 
-        queryBuilder.append("select * from shipment");
+        queryBuilder.append("select * from state;");
         try {
             model.execute("use `freight-stats`");
             ResultSet rs = model.execute(queryBuilder.toString());
@@ -130,7 +130,7 @@ public class FreightStatsController {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder errorBuilder = new StringBuilder();
 
-        queryBuilder.append("select * from shipment");
+        queryBuilder.append("select * from country;");
         try {
             model.execute("use `freight-stats`");
             ResultSet rs = model.execute(queryBuilder.toString());
@@ -155,7 +155,7 @@ public class FreightStatsController {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder errorBuilder = new StringBuilder();
 
-        queryBuilder.append("select * from shipment");
+        queryBuilder.append("select * from location;");
         try {
             model.execute("use `freight-stats`");
             ResultSet rs = model.execute(queryBuilder.toString());
@@ -180,7 +180,7 @@ public class FreightStatsController {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder errorBuilder = new StringBuilder();
 
-        queryBuilder.append("select * from shipment");
+        queryBuilder.append("select * from covid_case");
         try {
             model.execute("use `freight-stats`");
             ResultSet rs = model.execute(queryBuilder.toString());

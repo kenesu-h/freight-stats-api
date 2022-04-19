@@ -60,19 +60,19 @@ public class FreightStatUtils {
     }
 
     public static Shipment rsToShipment(ResultSet rs) throws SQLException {
-        int id = rs.getInt("Shipment_id");
-        TradeType tradeType = TradeType.valueOf(rs.getString("trade_type"));
-        int commodityId = rs.getInt("CommodityIndex");
-        int transportMethod = rs.getInt("TransportationMethod_id");
-        int source = rs.getInt("Source");
-        int destination = rs.getInt("Destination");
-        int value = rs.getInt("Value");
-        int weight = rs.getInt("Weight");
-        int freightCharges = rs.getInt("FreightCharges");
-        DF df = DF.valueOf(rs.getString("DF"));
-        boolean containerized = rs.getInt("Containerized") == 1;
+        int id = rs.getInt("shipment_id");
+        TradeType tradeType = TradeType.fromInt(rs.getInt("trade_type"));
+        int commodityId = rs.getInt("commodity_type");
+        int transportMethod = rs.getInt("transport_method");
+        int source = rs.getInt("source_state");
+        int destination = rs.getInt("destination_state");
+        int value = rs.getInt("value");
+        int weight = rs.getInt("weight");
+        int freightCharges = rs.getInt("freight_charges");
+        DF df = DF.fromInt(rs.getInt("df"));
+        boolean containerized = rs.getInt("containerized") == 1;
         LocalDate date = LocalDate.parse(
-                rs.getDate("month_month_id").toString(),
+                rs.getDate("ship_date").toString(),
                 DateTimeFormatter.ofPattern("yyyy-MM-dd")
         );
 
@@ -83,26 +83,26 @@ public class FreightStatUtils {
     }
 
     public static Commodity rsToCommodity(ResultSet rs) throws SQLException {
-        int id = rs.getInt("CommodityIndex");
-        String name = rs.getString("name");
+        int id = rs.getInt("commodity_id");
+        String name = rs.getString("commodity_name");
         return new Commodity(id, name);
     }
 
     public static TransportMethod rsToTransportMethod(ResultSet rs) throws SQLException {
-        int id = rs.getInt("TransportationMethod_id");
-        String name = rs.getString("name");
+        int id = rs.getInt("transport_method_id");
+        String name = rs.getString("transport_method_id");
         return new TransportMethod(id, name);
     }
 
     public static State rsToState(ResultSet rs) throws SQLException {
-        int id = rs.getInt("State_id");
-        String name = rs.getString("StateName");
-        int countryId = rs.getInt("Country_Country_id");
+        int id = rs.getInt("state_id");
+        String name = rs.getString("state_name");
+        int countryId = rs.getInt("country_id");
         return new State(id, name, countryId);
     }
 
     public static Country rsToCountry(ResultSet rs) throws SQLException {
-        int id = rs.getInt("Country_id");
+        int id = rs.getInt("country_id");
         Optional<String> name = Optional.ofNullable(rs.getString("Name"));
         return new Country(id, name);
     }
