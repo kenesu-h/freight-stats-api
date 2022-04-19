@@ -2,6 +2,7 @@ package com.github.kenesu_h.freight_stats.controller;
 
 import com.github.kenesu_h.freight_stats.common.*;
 import com.github.kenesu_h.freight_stats.model.FreightStatsModel;
+import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,15 +25,35 @@ public class FreightStatsController {
         return String.format("Hello %s!", name);
     }
 
+    private String genericQuery(String query) {
+        StringBuilder errorBuilder = new StringBuilder();
+
+        try {
+            model.execute("use `cs3200Project`;");
+            ResultSet rs = model.executeQuery(query);
+            try {
+                return FreightStatUtils.rsToJson(rs);
+            } catch (SQLException | JSONException e) {
+                errorBuilder.append("The following exception occurred when reading from a result set: ");
+                errorBuilder.append(e.toString());
+                return errorBuilder.toString();
+            }
+        } catch (SQLException e) {
+            errorBuilder.append("The following exception occurred when making a generic query: ");
+            errorBuilder.append(e.toString());
+            return errorBuilder.toString();
+        }
+    }
+
     @GetMapping("/api/shipment")
     public String shipment() {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder errorBuilder = new StringBuilder();
 
-        queryBuilder.append("select * from shipment;");
+        queryBuilder.append("select * from shipment limit 100;");
         try {
-            model.execute("use `freight-stats`");
-            ResultSet rs = model.execute(queryBuilder.toString());
+            model.execute("use `cs3200Project`;");
+            ResultSet rs = model.executeQuery(queryBuilder.toString());
             return FreightStatUtils.rsToSerializedObjects(rs, (ResultSet r) -> {
                 try {
                     return FreightStatUtils.rsToShipment(r);
@@ -49,28 +70,37 @@ public class FreightStatsController {
         }
     }
 
-    @GetMapping("/api/commodity")
-    public String commodity() {
-        StringBuilder queryBuilder = new StringBuilder();
-        StringBuilder errorBuilder = new StringBuilder();
+    @GetMapping("/api/monthly_value")
+    public String monthlyValue() {
+        return this.genericQuery("select ship_date, sum(value) from shipment group by ship_date order by ship_date;");
+    }
 
-        queryBuilder.append("select * from commodity;");
-        try {
-            model.execute("use `freight-stats`");
-            ResultSet rs = model.execute(queryBuilder.toString());
-            return FreightStatUtils.rsToSerializedObjects(rs, (ResultSet r) -> {
-                try {
-                    return FreightStatUtils.rsToCommodity(r);
-                } catch (SQLException e) {
-                    errorBuilder.append("The following exception occurred when reading from a result set: ");
-                    errorBuilder.append(e.toString());
-                    return errorBuilder.toString();
-                }
-            });
-        } catch (SQLException e) {
-            errorBuilder.append("The following exception occurred when querying commodities: ");
-            errorBuilder.append(e.toString());
-            return errorBuilder.toString();
+    @GetMapping("/api/commodity")
+    public String commodity(@RequestParam(required = false) String id) {
+        if (id == null) {
+            StringBuilder queryBuilder = new StringBuilder();
+            StringBuilder errorBuilder = new StringBuilder();
+
+            queryBuilder.append("select * from commodity limit 100;");
+            try {
+                model.execute("use cs3200Project;");
+                ResultSet rs = model.executeQuery(queryBuilder.toString());
+                return FreightStatUtils.rsToSerializedObjects(rs, (ResultSet r) -> {
+                    try {
+                        return FreightStatUtils.rsToCommodity(r);
+                    } catch (SQLException e) {
+                        errorBuilder.append("The following exception occurred when reading from a result set: ");
+                        errorBuilder.append(e.toString());
+                        return errorBuilder.toString();
+                    }
+                });
+            } catch (SQLException e) {
+                errorBuilder.append("The following exception occurred when querying commodities: ");
+                errorBuilder.append(e.toString());
+                return errorBuilder.toString();
+            }
+        } else {
+            return this.genericQuery("select commodity_name from commodity where commodity_id = " + id);
         }
     }
 
@@ -79,10 +109,10 @@ public class FreightStatsController {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder errorBuilder = new StringBuilder();
 
-        queryBuilder.append("select * from transport_method;");
+        queryBuilder.append("select * from transport_method limit 100;");
         try {
-            model.execute("use `freight-stats`");
-            ResultSet rs = model.execute(queryBuilder.toString());
+            model.execute("use cs3200Project;");
+            ResultSet rs = model.executeQuery(queryBuilder.toString());
             return FreightStatUtils.rsToSerializedObjects(rs, (ResultSet r) -> {
                 try {
                     return FreightStatUtils.rsToTransportMethod(r);
@@ -104,10 +134,10 @@ public class FreightStatsController {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder errorBuilder = new StringBuilder();
 
-        queryBuilder.append("select * from state;");
+        queryBuilder.append("select * from state limit 100;");
         try {
-            model.execute("use `freight-stats`");
-            ResultSet rs = model.execute(queryBuilder.toString());
+            model.execute("use cs3200Project;");
+            ResultSet rs = model.executeQuery(queryBuilder.toString());
             return FreightStatUtils.rsToSerializedObjects(rs, (ResultSet r) -> {
                 try {
                     return FreightStatUtils.rsToState(r);
@@ -129,10 +159,10 @@ public class FreightStatsController {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder errorBuilder = new StringBuilder();
 
-        queryBuilder.append("select * from country;");
+        queryBuilder.append("select * from country limit 100;");
         try {
-            model.execute("use `freight-stats`");
-            ResultSet rs = model.execute(queryBuilder.toString());
+            model.execute("use cs3200Project;");
+            ResultSet rs = model.executeQuery(queryBuilder.toString());
             return FreightStatUtils.rsToSerializedObjects(rs, (ResultSet r) -> {
                 try {
                     return FreightStatUtils.rsToCountry(r);
@@ -149,40 +179,15 @@ public class FreightStatsController {
         }
     }
 
-    @GetMapping("/api/location")
-    public String location() {
-        StringBuilder queryBuilder = new StringBuilder();
-        StringBuilder errorBuilder = new StringBuilder();
-
-        queryBuilder.append("select * from location;");
-        try {
-            model.execute("use `freight-stats`");
-            ResultSet rs = model.execute(queryBuilder.toString());
-            return FreightStatUtils.rsToSerializedObjects(rs, (ResultSet r) -> {
-                try {
-                    return FreightStatUtils.rsToLocation(r);
-                } catch (SQLException e) {
-                    errorBuilder.append("The following exception occurred when reading from a result set: ");
-                    errorBuilder.append(e.toString());
-                    return errorBuilder.toString();
-                }
-            });
-        } catch (SQLException e) {
-            errorBuilder.append("The following exception occurred when querying locations: ");
-            errorBuilder.append(e.toString());
-            return errorBuilder.toString();
-        }
-    }
-
     @GetMapping("/api/covidCase")
     public String covidCase() {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder errorBuilder = new StringBuilder();
 
-        queryBuilder.append("select * from covid_case");
+        queryBuilder.append("select * from covid_case limit 100;");
         try {
-            model.execute("use `freight-stats`");
-            ResultSet rs = model.execute(queryBuilder.toString());
+            model.execute("use cs3200Project;");
+            ResultSet rs = model.executeQuery(queryBuilder.toString());
             return FreightStatUtils.rsToSerializedObjects(rs, (ResultSet r) -> {
                 try {
                     return FreightStatUtils.rsToCovidCase(r);

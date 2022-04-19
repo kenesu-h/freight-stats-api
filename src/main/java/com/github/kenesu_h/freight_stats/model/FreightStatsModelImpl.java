@@ -22,19 +22,24 @@ public class FreightStatsModelImpl implements FreightStatsModel {
         StringBuilder urlBuilder = new StringBuilder();
         urlBuilder.append("jdbc:mysql://");
         urlBuilder.append(System.getenv("FREIGHT_STATS_HOSTNAME"));
-        urlBuilder.append("?currentSchema=");
-        urlBuilder.append(System.getenv("FREIGHT_STATS_SCHEMA"));
 
         this.connection = DriverManager.getConnection(
                 urlBuilder.toString(),
                 System.getenv("FREIGHT_STATS_USERNAME"),
                 System.getenv("FREIGHT_STATS_PASSWORD")
         );
+        this.connection.setSchema(System.getenv("FREIGHT_STATS_SCHEMA"));
     }
 
     @Override
-    public ResultSet execute(String query) throws SQLException {
+    public boolean execute(String sql) throws SQLException {
         Statement statement = this.connection.createStatement();
-        return statement.executeQuery(query);
+        return statement.execute(sql);
+    }
+
+    @Override
+    public ResultSet executeQuery(String sql) throws SQLException {
+        Statement statement = this.connection.createStatement();
+        return statement.executeQuery(sql);
     }
 }

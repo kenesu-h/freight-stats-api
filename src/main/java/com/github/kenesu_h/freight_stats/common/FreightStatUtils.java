@@ -5,17 +5,49 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.mysql.cj.x.protobuf.MysqlxDatatypes;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.function.Function;
 
 public class FreightStatUtils {
+    // Thanks to https://stackoverflow.com/a/59727839
+    public static boolean inRs(ResultSet rs, String column) {
+        try {
+            rs.findColumn(column);
+            return true;
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+    // Thanks to https://stackoverflow.com/a/41453021
+    public static String rsToJson(ResultSet rs) throws SQLException, JSONException {
+        JSONArray json = new JSONArray();
+        ResultSetMetaData rsmd = rs.getMetaData();
+        while(rs.next()) {
+            int numColumns = rsmd.getColumnCount();
+            JSONObject obj = new JSONObject();
+            for (int i=1; i<=numColumns; i++) {
+                String column_name = rsmd.getColumnName(i);
+                obj.put(column_name, rs.getObject(column_name));
+            }
+            json.put(obj);
+        }
+        return json.toString();
+    }
+
     public static <T> String serializeObjects(ArrayList<T> list) throws JsonProcessingException {
         StringBuilder serialized = new StringBuilder();
         serialized.append("[");
@@ -90,7 +122,7 @@ public class FreightStatUtils {
 
     public static TransportMethod rsToTransportMethod(ResultSet rs) throws SQLException {
         int id = rs.getInt("transport_method_id");
-        String name = rs.getString("transport_method_id");
+        String name = rs.getString("transport_method_name");
         return new TransportMethod(id, name);
     }
 
@@ -103,7 +135,7 @@ public class FreightStatUtils {
 
     public static Country rsToCountry(ResultSet rs) throws SQLException {
         int id = rs.getInt("country_id");
-        Optional<String> name = Optional.ofNullable(rs.getString("Name"));
+        Optional<String> name = Optional.ofNullable(rs.getString("country_name"));
         return new Country(id, name);
     }
 

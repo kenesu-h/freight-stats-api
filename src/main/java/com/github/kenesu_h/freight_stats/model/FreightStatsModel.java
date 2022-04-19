@@ -8,5 +8,7 @@ import java.sql.SQLException;
  * connection. In other words, if the application needs to make queries to the database, it will be through the model.
  */
 public interface FreightStatsModel {
-    ResultSet execute(String query) throws SQLException;
+    boolean execute(String sql) throws SQLException;
+
+    ResultSet executeQuery(String sql) throws SQLException;
 }
