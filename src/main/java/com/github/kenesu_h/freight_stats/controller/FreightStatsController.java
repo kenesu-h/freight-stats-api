@@ -1,6 +1,5 @@
 package com.github.kenesu_h.freight_stats.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.kenesu_h.freight_stats.common.*;
 import com.github.kenesu_h.freight_stats.model.FreightStatsModel;
 import org.springframework.beans.factory.annotation.Autowired;
