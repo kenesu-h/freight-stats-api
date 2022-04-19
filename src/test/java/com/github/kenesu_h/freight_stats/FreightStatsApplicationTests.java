@@ -54,6 +54,8 @@ class FreightStatsApplicationTests {
 		Assertions.assertEquals(DF.DOMESTIC, DF.valueOf("DOMESTIC"));
 		Assertions.assertEquals(DF.FOREIGN, DF.valueOf("FOREIGN"));
 
+		Assertions.assertEquals("DOMESTIC", DF.DOMESTIC.toString());
+		Assertions.assertEquals("FOREIGN", DF.FOREIGN.toString());
 	}
 
 	@Test
