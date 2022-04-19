@@ -3,6 +3,8 @@ package com.github.kenesu_h.freight_stats.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.kenesu_h.freight_stats.common.*;
 import com.github.kenesu_h.freight_stats.model.FreightStatsModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.Function;
@@ -30,12 +35,16 @@ public class FreightStatsController {
         return String.format("Hello %s!", name);
     }
 
-    private <T> String serializeObjects(ArrayList<T> list) throws JsonProcessingException {
+    public <T> String serializeObjects(ArrayList<T> list) throws JsonProcessingException {
         StringBuilder serialized = new StringBuilder();
         serialized.append("[");
 
         // I took the code below from https://stackoverflow.com/a/15786175
-        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        ObjectWriter ow = new ObjectMapper()
+                .setDateFormat(new SimpleDateFormat("yyyy-MM-dd"))
+                .registerModule(new JavaTimeModule())
+                .registerModule(new Jdk8Module())
+                .writer();
         for (int i = 0; i < list.size(); i++) {
             serialized.append(ow.writeValueAsString(list.get(i)));
             if (i != (list.size() - 1)) {
@@ -106,7 +115,10 @@ public class FreightStatsController {
         int freightCharges = rs.getInt("FreightCharges");
         DF df = DF.valueOf(rs.getString("DF"));
         boolean containerized = rs.getInt("Containerized") == 1;
-        java.util.Date date = new java.util.Date(rs.getDate("date").getTime());
+        LocalDate date = LocalDate.parse(
+                rs.getDate("month_month_id").toString(),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        );
 
         return new Shipment(
                 id, tradeType, commodityId, transportMethod, source, destination, value, weight,
@@ -301,7 +313,10 @@ public class FreightStatsController {
         int positiveTests = rs.getInt("positive_tests");
         int totalTests = rs.getInt("total_tests");
         Optional<Integer> testingRate = Optional.of(rs.getInt("testing_rate"));
-        java.util.Date date = new java.util.Date(rs.getDate("month_month_id").getTime());
+        LocalDate date = LocalDate.parse(
+                rs.getDate("month_month_id").toString(),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        );
         int locationId = rs.getInt("covidLocation__state_State_id");
         return new CovidCase(id, positiveTests, totalTests, testingRate, date, locationId);
     }

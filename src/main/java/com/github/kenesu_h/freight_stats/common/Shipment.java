@@ -1,6 +1,6 @@
 package com.github.kenesu_h.freight_stats.common;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public class Shipment {
     private int id;
@@ -14,11 +14,11 @@ public class Shipment {
     private int freightCharges;
     private DF df;
     private boolean containerized;
-    private Date date;
+    private LocalDate date;
 
     public Shipment(
             int id, TradeType tradeType, int commodityId, int transportMethodId, int source, int destination, int value,
-            int weight, int freightCharges, DF df, boolean containerized, Date date
+            int weight, int freightCharges, DF df, boolean containerized, LocalDate date
     ) {
         this.id = id;
         this.tradeType = tradeType;
@@ -78,7 +78,7 @@ public class Shipment {
         return this.containerized;
     }
 
-    public Date getDate() {
+    public LocalDate getDate() {
         return this.date;
     }
 }

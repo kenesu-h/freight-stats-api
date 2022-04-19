@@ -1,6 +1,6 @@
 package com.github.kenesu_h.freight_stats.common;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Optional;
 
 public class CovidCase {
@@ -8,10 +8,10 @@ public class CovidCase {
     private int positiveTests;
     private int totalTests;
     private Optional<Integer> testingRate;
-    private Date date;
+    private LocalDate date;
     private int locationStateId;
 
-    public CovidCase(int id, int positiveTests, int totalTests, Optional<Integer> testingRate, Date date, int locationStateId) {
+    public CovidCase(int id, int positiveTests, int totalTests, Optional<Integer> testingRate, LocalDate date, int locationStateId) {
         this.id = id;
         this.positiveTests = positiveTests;
         this.totalTests = totalTests;
@@ -36,7 +36,7 @@ public class CovidCase {
         return this.testingRate;
     }
 
-    public Date getDate() {
+    public LocalDate getDate() {
         return this.date;
     }
 
