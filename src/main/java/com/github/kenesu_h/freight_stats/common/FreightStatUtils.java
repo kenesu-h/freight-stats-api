@@ -45,16 +45,6 @@ public class FreightStatUtils {
         SHIPMENT_PARAMS = Collections.unmodifiableMap(map);
     }
 
-    // Thanks to https://stackoverflow.com/a/59727839
-    public static boolean inRs(ResultSet rs, String column) {
-        try {
-            rs.findColumn(column);
-            return true;
-        } catch (SQLException e) {
-            return false;
-        }
-    }
-
     // Thanks to https://stackoverflow.com/a/41453021
     public static String rsToJson(ResultSet rs) throws SQLException, JSONException {
         JSONArray json = new JSONArray();

@@ -28,7 +28,7 @@ public class FreightStatsController {
         StringBuilder errorBuilder = new StringBuilder();
 
         try {
-            model.execute("use `cs3200Project`");
+            this.useSchema();
             ResultSet rs = model.executeQuery(query);
             try {
                 return FreightStatUtils.rsToJson(rs);
@@ -47,6 +47,12 @@ public class FreightStatsController {
     private void limitResults(StringBuilder queryBuilder) {
         queryBuilder.append(" limit ");
         queryBuilder.append(FreightStatUtils.RESULT_LIMIT);
+    }
+
+    private void useSchema() throws SQLException {
+        StringBuilder b = new StringBuilder("use ");
+        b.append(System.getenv("FREIGHT_STATS_SCHEMA"));
+        model.execute(b.toString());
     }
 
     @GetMapping("/api/shipment")
@@ -121,7 +127,7 @@ public class FreightStatsController {
         }
         this.limitResults(queryBuilder);
         try {
-            model.execute("use `cs3200Project`");
+            this.useSchema();
             ResultSet rs = model.executeQuery(queryBuilder.toString());
             return FreightStatUtils.rsToSerializedObjects(rs, (ResultSet r) -> {
                 try {
