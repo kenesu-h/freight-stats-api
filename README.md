@@ -44,6 +44,12 @@ So far, `shipment` is the only table that accepts parameters in its requests:
 Providing no (valid) parameters will give you all rows. However, regardless of your query, the amount of rows will be
 limited to only 500.
 
+# Setup
+Clone the repo, install the dependencies using Maven, and run FreightStatsApplication.Main.
+
+I don't usually like using IDEs, but IntelliJ has built-in Maven support. Using it will make your life significantly
+easier.
+
 # Example
 I'll give some examples so you can have an idea of everything from basic requests to advanced ones.
 
