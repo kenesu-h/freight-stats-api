@@ -16,12 +16,29 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 public class FreightStatUtils {
+    // Thanks to https://stackoverflow.com/a/507658
+    public static Map<String, String> shipmentFields;
+    static {
+        Map<String, String> map = new HashMap<>();
+        map.put("id", "shipment_id");
+        map.put("tradeType", "trade_type");
+        map.put("commodityId", "commodity_type");
+        map.put("transportMethod", "transport_method");
+        map.put("source", "source_state");
+        map.put("destination", "destination_state");
+        map.put("value", "value");
+        map.put("weight", "weight");
+        map.put("freightCharges", "freight_charges");
+        map.put("df", "df");
+        map.put("containerized", "containerized");
+        map.put("date", "ship_date");
+        shipmentFields = Collections.unmodifiableMap(map);
+    }
+
     // Thanks to https://stackoverflow.com/a/59727839
     public static boolean inRs(ResultSet rs, String column) {
         try {

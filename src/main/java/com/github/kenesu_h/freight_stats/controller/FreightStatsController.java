@@ -9,7 +9,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;;
 
 /**
  * A freight-stats REST controller. Any time that a user makes a visit to any of the paths this controller is bound to,
@@ -41,11 +44,31 @@ public class FreightStatsController {
     }
 
     @GetMapping("/api/shipment")
-    public String shipment() {
+    public String shipment(
+            @RequestParam Map<String,String> params
+    ) {
         StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("select * from shipment");
+
         StringBuilder errorBuilder = new StringBuilder();
 
-        queryBuilder.append("select * from shipment limit 100;");
+        if (!params.isEmpty()) {
+            queryBuilder.append(" where ");
+            int i = 0;
+            for (String key : params.keySet()) {
+                if (params.containsKey(key)) {
+                    queryBuilder.append(FreightStatUtils.shipmentFields.get(key));
+                    queryBuilder.append(" = ");
+                    queryBuilder.append(params.get(key));
+
+                    if (i < params.keySet().size() - 1) {
+                        queryBuilder.append(" and ");
+                    }
+                }
+                i += 1;
+            }
+        }
+        queryBuilder.append(" limit 100;");
         try {
             model.execute("use `cs3200Project`;");
             ResultSet rs = model.executeQuery(queryBuilder.toString());
