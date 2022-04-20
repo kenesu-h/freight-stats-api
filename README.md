@@ -69,6 +69,6 @@ To order all shipments by weight and value (be sure to separate column names wit
 
 Lastly, you can even combine all those examples into this horrid mess:
 ```
-/api/shipment?tradeType=2&orderBy=weight,value&startDate=2018-06-01&order=desc&endDate=2018-09-01
+.../api/shipment?tradeType=2&orderBy=weight,value&startDate=2018-06-01&order=desc&endDate=2018-09-01
 ```
 Order doesn't --- or at least, shouldn't --- matter. Feel free to mix and match parameter orders as you see fit.
