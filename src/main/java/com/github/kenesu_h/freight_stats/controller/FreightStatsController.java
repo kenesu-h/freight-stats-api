@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;;
 
@@ -27,7 +28,7 @@ public class FreightStatsController {
         StringBuilder errorBuilder = new StringBuilder();
 
         try {
-            model.execute("use `cs3200Project`;");
+            model.execute("use `cs3200Project`");
             ResultSet rs = model.executeQuery(query);
             try {
                 return FreightStatUtils.rsToJson(rs);
@@ -43,34 +44,84 @@ public class FreightStatsController {
         }
     }
 
+    private void limitResults(StringBuilder queryBuilder) {
+        queryBuilder.append(" limit ");
+        queryBuilder.append(FreightStatUtils.RESULT_LIMIT);
+    }
+
     @GetMapping("/api/shipment")
     public String shipment(
             @RequestParam Map<String,String> params
     ) {
-        StringBuilder queryBuilder = new StringBuilder();
-        queryBuilder.append("select * from shipment");
-
+        StringBuilder queryBuilder = new StringBuilder("select * from shipment");
         StringBuilder errorBuilder = new StringBuilder();
 
-        if (!params.isEmpty()) {
-            queryBuilder.append(" where ");
-            int i = 0;
-            for (String key : params.keySet()) {
-                if (params.containsKey(key)) {
-                    queryBuilder.append(FreightStatUtils.shipmentFields.get(key));
-                    queryBuilder.append(" = ");
-                    queryBuilder.append(params.get(key));
+        // Ignore all params without a mapped field
+        params.keySet().removeIf((String key) -> !FreightStatUtils.SHIPMENT_PARAMS.containsKey(key));
 
-                    if (i < params.keySet().size() - 1) {
-                        queryBuilder.append(" and ");
-                    }
+        if (!params.keySet().isEmpty()) {
+            boolean ordering = params.containsKey("orderBy");
+            queryBuilder.append(" where ");
+
+            int i = 0;
+            int len = params.keySet().size();
+            for (String key : params.keySet()) {
+                if (!key.equals("orderBy") && !key.equals("order")) {
+                    queryBuilder.append(FreightStatUtils.SHIPMENT_PARAMS.get(key));
+                }
+                switch (key) {
+                    case "date":
+                        queryBuilder.append(" = str_to_date(\"");
+                        queryBuilder.append(params.get(key));
+                        queryBuilder.append("\", \"%Y-%m-%d\")");
+                        break;
+                    case "startDate":
+                        queryBuilder.append(" >= str_to_date(\"");
+                        queryBuilder.append(params.get(key));
+                        queryBuilder.append("\", \"%Y-%m-%d\")");
+                        break;
+                    case "endDate":
+                        queryBuilder.append(" <= str_to_date(\"");
+                        queryBuilder.append(params.get(key));
+                        queryBuilder.append("\", \"%Y-%m-%d\")");
+                        break;
+                    case "orderBy":
+                    case "order":
+                        len -= 1;
+                        continue;
+                    default:
+                        queryBuilder.append(" = ");
+                        queryBuilder.append(params.get(key));
+                }
+                if (i < len - 1) {
+                    queryBuilder.append(" and ");
                 }
                 i += 1;
             }
+            if (ordering) {
+                queryBuilder.append(" order by ");
+                String[] subparams = params.get("orderBy").split(",");
+                Arrays.stream(subparams).filter((String s) -> !FreightStatUtils.SHIPMENT_PARAMS.containsKey(s));
+                i = 0;
+                for (String subparam : subparams) {
+                    queryBuilder.append(FreightStatUtils.SHIPMENT_PARAMS.get(subparam));
+                    if (i < subparams.length - 1) {
+                        queryBuilder.append(", ");
+                    }
+                    i += 1;
+                }
+                if (params.containsKey("order")) {
+                    if (params.get("order").equals("asc")) {
+                        queryBuilder.append(" asc");
+                    } else if (params.get("order").equals("desc")) {
+                        queryBuilder.append(" desc");
+                    }
+                }
+            }
         }
-        queryBuilder.append(" limit 100;");
+        this.limitResults(queryBuilder);
         try {
-            model.execute("use `cs3200Project`;");
+            model.execute("use `cs3200Project`");
             ResultSet rs = model.executeQuery(queryBuilder.toString());
             return FreightStatUtils.rsToSerializedObjects(rs, (ResultSet r) -> {
                 try {
@@ -99,9 +150,10 @@ public class FreightStatsController {
             StringBuilder queryBuilder = new StringBuilder();
             StringBuilder errorBuilder = new StringBuilder();
 
-            queryBuilder.append("select * from commodity limit 100;");
+            queryBuilder.append("select * from commodity");
+            this.limitResults(queryBuilder);
             try {
-                model.execute("use cs3200Project;");
+                model.execute("use cs3200Project");
                 ResultSet rs = model.executeQuery(queryBuilder.toString());
                 return FreightStatUtils.rsToSerializedObjects(rs, (ResultSet r) -> {
                     try {
@@ -127,9 +179,10 @@ public class FreightStatsController {
         StringBuilder queryBuilder = new StringBuilder();
         StringBuilder errorBuilder = new StringBuilder();
 
-        queryBuilder.append("select * from transport_method limit 100;");
+        queryBuilder.append("select * from transport_method");
+        this.limitResults(queryBuilder);
         try {
-            model.execute("use cs3200Project;");
+            model.execute("use cs3200Project");
             ResultSet rs = model.executeQuery(queryBuilder.toString());
             return FreightStatUtils.rsToSerializedObjects(rs, (ResultSet r) -> {
                 try {
@@ -153,8 +206,9 @@ public class FreightStatsController {
         StringBuilder errorBuilder = new StringBuilder();
 
         queryBuilder.append("select * from state limit 100;");
+        this.limitResults(queryBuilder);
         try {
-            model.execute("use cs3200Project;");
+            model.execute("use cs3200Project");
             ResultSet rs = model.executeQuery(queryBuilder.toString());
             return FreightStatUtils.rsToSerializedObjects(rs, (ResultSet r) -> {
                 try {
@@ -179,7 +233,7 @@ public class FreightStatsController {
 
         queryBuilder.append("select * from country limit 100;");
         try {
-            model.execute("use cs3200Project;");
+            model.execute("use cs3200Project");
             ResultSet rs = model.executeQuery(queryBuilder.toString());
             return FreightStatUtils.rsToSerializedObjects(rs, (ResultSet r) -> {
                 try {
@@ -204,7 +258,7 @@ public class FreightStatsController {
 
         queryBuilder.append("select * from covid_case limit 100;");
         try {
-            model.execute("use cs3200Project;");
+            model.execute("use cs3200Project");
             ResultSet rs = model.executeQuery(queryBuilder.toString());
             return FreightStatUtils.rsToSerializedObjects(rs, (ResultSet r) -> {
                 try {

@@ -9,16 +9,16 @@ public class Shipment {
     private int transportMethodId;
     private int source;
     private int destination;
-    private int value;
-    private int weight;
+    private long value;
+    private long weight;
     private int freightCharges;
     private DF df;
     private boolean containerized;
     private LocalDate date;
 
     public Shipment(
-            int id, TradeType tradeType, int commodityId, int transportMethodId, int source, int destination, int value,
-            int weight, int freightCharges, DF df, boolean containerized, LocalDate date
+            int id, TradeType tradeType, int commodityId, int transportMethodId, int source, int destination, long value,
+            long weight, int freightCharges, DF df, boolean containerized, LocalDate date
     ) {
         this.id = id;
         this.tradeType = tradeType;
@@ -58,11 +58,11 @@ public class Shipment {
         return this.destination;
     }
 
-    public int getValue() {
+    public long getValue() {
         return this.value;
     }
 
-    public int getWeight() {
+    public long getWeight() {
         return this.weight;
     }
 

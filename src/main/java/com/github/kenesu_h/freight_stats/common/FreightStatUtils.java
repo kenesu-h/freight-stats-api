@@ -20,8 +20,10 @@ import java.util.*;
 import java.util.function.Function;
 
 public class FreightStatUtils {
+    public static int RESULT_LIMIT = 500;
+
     // Thanks to https://stackoverflow.com/a/507658
-    public static Map<String, String> shipmentFields;
+    public static Map<String, String> SHIPMENT_PARAMS;
     static {
         Map<String, String> map = new HashMap<>();
         map.put("id", "shipment_id");
@@ -36,7 +38,11 @@ public class FreightStatUtils {
         map.put("df", "df");
         map.put("containerized", "containerized");
         map.put("date", "ship_date");
-        shipmentFields = Collections.unmodifiableMap(map);
+        map.put("startDate", "ship_date");
+        map.put("endDate", "ship_date");
+        map.put("orderBy", "order by");
+        map.put("order", "");
+        SHIPMENT_PARAMS = Collections.unmodifiableMap(map);
     }
 
     // Thanks to https://stackoverflow.com/a/59727839
@@ -115,8 +121,8 @@ public class FreightStatUtils {
         int transportMethod = rs.getInt("transport_method");
         int source = rs.getInt("source_state");
         int destination = rs.getInt("destination_state");
-        int value = rs.getInt("value");
-        int weight = rs.getInt("weight");
+        long value = rs.getLong("value");
+        long weight = rs.getLong("weight");
         int freightCharges = rs.getInt("freight_charges");
         DF df = DF.fromInt(rs.getInt("df"));
         boolean containerized = rs.getInt("containerized") == 1;
