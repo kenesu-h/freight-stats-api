@@ -45,7 +45,14 @@ Providing no (valid) parameters will give you all rows. However, regardless of y
 limited to only 500.
 
 # Setup
-Clone the repo, install the dependencies using Maven, and run FreightStatsApplication.Main.
+- Clone the repo
+- Install the dependencies using Maven.
+- Set the following environment variables:
+  - `FREIGHT_STATS_HOSTNAME`
+  - `FREIGHT_STATS_SCHEMA`
+  - `FREIGHT_STATS_USERNAME`
+  - `FREIGHT_STATS_PASSWORD`
+- Run FreightStatsApplication.Main.
 
 I don't usually like using IDEs, but IntelliJ has built-in Maven support. Using it will make your life significantly
 easier.
