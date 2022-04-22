@@ -20,7 +20,7 @@ import java.util.*;
 import java.util.function.Function;
 
 public class FreightStatUtils {
-    public static int RESULT_LIMIT = 500;
+    public static int RESULT_LIMIT = 50000;
 
     // Thanks to https://stackoverflow.com/a/507658
     public static Map<String, String> SHIPMENT_PARAMS;
@@ -28,7 +28,7 @@ public class FreightStatUtils {
         Map<String, String> map = new HashMap<>();
         map.put("id", "shipment_id");
         map.put("tradeType", "trade_type");
-        map.put("commodityId", "commodity_type");
+        map.put("commodityType", "commodity_type");
         map.put("transportMethod", "transport_method");
         map.put("source", "source_state");
         map.put("destination", "destination_state");
@@ -40,6 +40,7 @@ public class FreightStatUtils {
         map.put("date", "ship_date");
         map.put("startDate", "ship_date");
         map.put("endDate", "ship_date");
+        map.put("columns", "");
         map.put("orderBy", "order by");
         map.put("order", "");
         SHIPMENT_PARAMS = Collections.unmodifiableMap(map);

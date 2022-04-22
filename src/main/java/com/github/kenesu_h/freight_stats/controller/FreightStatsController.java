@@ -4,6 +4,7 @@ import com.github.kenesu_h.freight_stats.common.*;
 import com.github.kenesu_h.freight_stats.model.FreightStatsModel;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,6 +20,7 @@ import java.util.Map;;
  * A freight-stats REST controller. Any time that a user makes a visit to any of the paths this controller is bound to,
  * it will respond with some String content of some kind.
  */
+@CrossOrigin
 @RestController
 public class FreightStatsController {
     @Autowired
@@ -59,52 +61,89 @@ public class FreightStatsController {
     public String shipment(
             @RequestParam Map<String,String> params
     ) {
-        StringBuilder queryBuilder = new StringBuilder("select * from shipment");
+        StringBuilder queryBuilder = new StringBuilder("select ");
+        StringBuilder columnBuilder = new StringBuilder();
         StringBuilder errorBuilder = new StringBuilder();
 
         // Ignore all params without a mapped field
         params.keySet().removeIf((String key) -> !FreightStatUtils.SHIPMENT_PARAMS.containsKey(key));
 
         if (!params.keySet().isEmpty()) {
-            boolean ordering = params.containsKey("orderBy");
-            queryBuilder.append(" where ");
-
             int i = 0;
-            int len = params.keySet().size();
-            for (String key : params.keySet()) {
-                if (!key.equals("orderBy") && !key.equals("order")) {
-                    queryBuilder.append(FreightStatUtils.SHIPMENT_PARAMS.get(key));
+            if (params.containsKey("columns")) {
+                String[] subparams = params.get("columns").split(",");
+                Arrays.stream(subparams).filter((String s) -> !FreightStatUtils.SHIPMENT_PARAMS.containsKey(s));
+                if (subparams.length > 0) {
+                    i = 0;
+                    for (String subparam : subparams) {
+                        columnBuilder.append(FreightStatUtils.SHIPMENT_PARAMS.get(subparam));
+                        if (i < subparams.length - 1) {
+                            columnBuilder.append(", ");
+                        }
+                        i += 1;
+                    }
+                } else {
+                    columnBuilder.append("*");
                 }
-                switch (key) {
-                    case "date":
-                        queryBuilder.append(" = str_to_date(\"");
-                        queryBuilder.append(params.get(key));
-                        queryBuilder.append("\", \"%Y-%m-%d\")");
-                        break;
-                    case "startDate":
-                        queryBuilder.append(" >= str_to_date(\"");
-                        queryBuilder.append(params.get(key));
-                        queryBuilder.append("\", \"%Y-%m-%d\")");
-                        break;
-                    case "endDate":
-                        queryBuilder.append(" <= str_to_date(\"");
-                        queryBuilder.append(params.get(key));
-                        queryBuilder.append("\", \"%Y-%m-%d\")");
-                        break;
-                    case "orderBy":
-                    case "order":
-                        len -= 1;
-                        continue;
-                    default:
-                        queryBuilder.append(" = ");
-                        queryBuilder.append(params.get(key));
-                }
-                if (i < len - 1) {
-                    queryBuilder.append(" and ");
-                }
-                i += 1;
+            } else {
+                columnBuilder.append("*");
             }
-            if (ordering) {
+
+            int columnParams = 0;
+            for (String key : params.keySet()) {
+                if (!key.equals("columns") && !key.equals("orderBy") && !key.equals("order")) {
+                    columnParams += 1;
+                    break;
+                }
+            }
+
+            queryBuilder.append(columnBuilder.toString());
+            queryBuilder.append(" from shipment");
+
+            if (columnParams > 0) {
+                queryBuilder.append(" where ");
+
+                i = 0;
+                for (String key : params.keySet()) {
+                    boolean isColumnParam = false;
+                    if (!key.equals("columns") && !key.equals("orderBy") && !key.equals("order")) {
+                        isColumnParam = true;
+                        queryBuilder.append(FreightStatUtils.SHIPMENT_PARAMS.get(key));
+                    }
+                    switch (key) {
+                        case "date":
+                            queryBuilder.append(" = str_to_date(\"");
+                            queryBuilder.append(params.get(key));
+                            queryBuilder.append("\", \"%Y-%m-%d\")");
+                            break;
+                        case "startDate":
+                            queryBuilder.append(" >= str_to_date(\"");
+                            queryBuilder.append(params.get(key));
+                            queryBuilder.append("\", \"%Y-%m-%d\")");
+                            break;
+                        case "endDate":
+                            queryBuilder.append(" <= str_to_date(\"");
+                            queryBuilder.append(params.get(key));
+                            queryBuilder.append("\", \"%Y-%m-%d\")");
+                            break;
+                        case "columns":
+                        case "orderBy":
+                        case "order":
+                            continue;
+                        default:
+                            queryBuilder.append(" = ");
+                            queryBuilder.append(params.get(key));
+                    }
+                    if (i < columnParams) {
+                        queryBuilder.append(" and ");
+                    }
+                    if (isColumnParam) {
+                        i += 1;
+                    }
+                }
+            }
+
+            if (params.containsKey("orderBy")) {
                 queryBuilder.append(" order by ");
                 String[] subparams = params.get("orderBy").split(",");
                 Arrays.stream(subparams).filter((String s) -> !FreightStatUtils.SHIPMENT_PARAMS.containsKey(s));
@@ -126,9 +165,12 @@ public class FreightStatsController {
             }
         }
         this.limitResults(queryBuilder);
+        System.out.println(queryBuilder.toString());
         try {
             this.useSchema();
-            ResultSet rs = model.executeQuery(queryBuilder.toString());
+            // ResultSet rs = model.executeQuery(queryBuilder.toString());
+            return this.genericQuery(queryBuilder.toString());
+            /*
             return FreightStatUtils.rsToSerializedObjects(rs, (ResultSet r) -> {
                 try {
                     return FreightStatUtils.rsToShipment(r);
@@ -138,6 +180,7 @@ public class FreightStatsController {
                     return errorBuilder.toString();
                 }
             });
+            */
         } catch (SQLException e) {
             errorBuilder.append("The following exception occurred when querying shipments: ");
             errorBuilder.append(e.toString());
