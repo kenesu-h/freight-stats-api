@@ -26,7 +26,7 @@ public class FreightStatsController {
     @Autowired
     private FreightStatsModel model;
 
-    private String genericQuery(String query) {
+    private String basicQuery(String query) {
         StringBuilder errorBuilder = new StringBuilder();
 
         try {
@@ -36,12 +36,12 @@ public class FreightStatsController {
                 return FreightStatUtils.rsToJson(rs);
             } catch (SQLException | JSONException e) {
                 errorBuilder.append("The following exception occurred when reading from a result set: ");
-                errorBuilder.append(e.toString());
+                errorBuilder.append(e);
                 return errorBuilder.toString();
             }
         } catch (SQLException e) {
             errorBuilder.append("The following exception occurred when making a generic query: ");
-            errorBuilder.append(e.toString());
+            errorBuilder.append(e);
             return errorBuilder.toString();
         }
     }
@@ -58,9 +58,7 @@ public class FreightStatsController {
     }
 
     @GetMapping("/api/shipment")
-    public String shipment(
-            @RequestParam Map<String,String> params
-    ) {
+    public String shipment(@RequestParam Map<String,String> params) {
         StringBuilder queryBuilder = new StringBuilder("select ");
         StringBuilder columnBuilder = new StringBuilder();
         StringBuilder errorBuilder = new StringBuilder();
@@ -97,7 +95,7 @@ public class FreightStatsController {
                 }
             }
 
-            queryBuilder.append(columnBuilder.toString());
+            queryBuilder.append(columnBuilder);
             queryBuilder.append(" from shipment");
 
             if (columnParams > 0) {
@@ -163,34 +161,23 @@ public class FreightStatsController {
                     }
                 }
             }
+        } else {
+            queryBuilder.append("* from shipment");
         }
         this.limitResults(queryBuilder);
-        System.out.println(queryBuilder.toString());
         try {
             this.useSchema();
-            // ResultSet rs = model.executeQuery(queryBuilder.toString());
-            return this.genericQuery(queryBuilder.toString());
-            /*
-            return FreightStatUtils.rsToSerializedObjects(rs, (ResultSet r) -> {
-                try {
-                    return FreightStatUtils.rsToShipment(r);
-                } catch (SQLException e) {
-                    errorBuilder.append("The following exception occurred when reading from a result set: ");
-                    errorBuilder.append(e.toString());
-                    return errorBuilder.toString();
-                }
-            });
-            */
+            return this.basicQuery(queryBuilder.toString());
         } catch (SQLException e) {
             errorBuilder.append("The following exception occurred when querying shipments: ");
-            errorBuilder.append(e.toString());
+            errorBuilder.append(e);
             return errorBuilder.toString();
         }
     }
 
-    @GetMapping("/api/monthly_value")
+    @GetMapping("/api/monthlyValue")
     public String monthlyValue() {
-        return this.genericQuery("select ship_date, sum(value) from shipment group by ship_date order by ship_date;");
+        return this.basicQuery("select ship_date, sum(value) from shipment group by ship_date order by ship_date;");
     }
 
     @GetMapping("/api/commodity")
@@ -209,17 +196,17 @@ public class FreightStatsController {
                         return FreightStatUtils.rsToCommodity(r);
                     } catch (SQLException e) {
                         errorBuilder.append("The following exception occurred when reading from a result set: ");
-                        errorBuilder.append(e.toString());
+                        errorBuilder.append(e);
                         return errorBuilder.toString();
                     }
                 });
             } catch (SQLException e) {
                 errorBuilder.append("The following exception occurred when querying commodities: ");
-                errorBuilder.append(e.toString());
+                errorBuilder.append(e);
                 return errorBuilder.toString();
             }
         } else {
-            return this.genericQuery("select commodity_name from commodity where commodity_id = " + id);
+            return this.basicQuery("select commodity_name from commodity where commodity_id = " + id);
         }
     }
 
@@ -238,13 +225,13 @@ public class FreightStatsController {
                     return FreightStatUtils.rsToTransportMethod(r);
                 } catch (SQLException e) {
                     errorBuilder.append("The following exception occurred when reading from a result set: ");
-                    errorBuilder.append(e.toString());
+                    errorBuilder.append(e);
                     return errorBuilder.toString();
                 }
             });
         } catch (SQLException e) {
             errorBuilder.append("The following exception occurred when querying transport methods: ");
-            errorBuilder.append(e.toString());
+            errorBuilder.append(e);
             return errorBuilder.toString();
         }
     }
@@ -264,13 +251,13 @@ public class FreightStatsController {
                     return FreightStatUtils.rsToState(r);
                 } catch (SQLException e) {
                     errorBuilder.append("The following exception occurred when reading from a result set: ");
-                    errorBuilder.append(e.toString());
+                    errorBuilder.append(e);
                     return errorBuilder.toString();
                 }
             });
         } catch (SQLException e) {
             errorBuilder.append("The following exception occurred when querying states: ");
-            errorBuilder.append(e.toString());
+            errorBuilder.append(e);
             return errorBuilder.toString();
         }
     }
@@ -289,39 +276,142 @@ public class FreightStatsController {
                     return FreightStatUtils.rsToCountry(r);
                 } catch (SQLException e) {
                     errorBuilder.append("The following exception occurred when reading from a result set: ");
-                    errorBuilder.append(e.toString());
+                    errorBuilder.append(e);
                     return errorBuilder.toString();
                 }
             });
         } catch (SQLException e) {
             errorBuilder.append("The following exception occurred when querying countries: ");
-            errorBuilder.append(e.toString());
+            errorBuilder.append(e);
             return errorBuilder.toString();
         }
     }
 
-    @GetMapping("/api/covidCase")
-    public String covidCase() {
-        StringBuilder queryBuilder = new StringBuilder();
+    @GetMapping("/api/covidData")
+    public String covidData(@RequestParam Map<String,String> params) {
+        StringBuilder queryBuilder = new StringBuilder("select ");
+        StringBuilder columnBuilder = new StringBuilder();
         StringBuilder errorBuilder = new StringBuilder();
 
-        queryBuilder.append("select * from covid_case limit 100;");
-        try {
-            model.execute("use cs3200Project");
-            ResultSet rs = model.executeQuery(queryBuilder.toString());
-            return FreightStatUtils.rsToSerializedObjects(rs, (ResultSet r) -> {
-                try {
-                    return FreightStatUtils.rsToCovidCase(r);
-                } catch (SQLException e) {
-                    errorBuilder.append("The following exception occurred when reading from a result set: ");
-                    errorBuilder.append(e.toString());
-                    return errorBuilder.toString();
+        // Ignore all params without a mapped field
+        params.keySet().removeIf((String key) -> !FreightStatUtils.COVID_DATA_PARAMS.containsKey(key));
+
+        if (!params.keySet().isEmpty()) {
+            int i = 0;
+            if (params.containsKey("columns")) {
+                String[] subparams = params.get("columns").split(",");
+                Arrays.stream(subparams).filter((String s) -> !FreightStatUtils.COVID_DATA_PARAMS.containsKey(s));
+                if (subparams.length > 0) {
+                    i = 0;
+                    for (String subparam : subparams) {
+                        columnBuilder.append(FreightStatUtils.COVID_DATA_PARAMS.get(subparam));
+                        if (i < subparams.length - 1) {
+                            columnBuilder.append(", ");
+                        }
+                        i += 1;
+                    }
+                } else {
+                    columnBuilder.append("*");
                 }
-            });
+            } else {
+                columnBuilder.append("*");
+            }
+
+            int columnParams = 0;
+            for (String key : params.keySet()) {
+                if (!key.equals("columns") && !key.equals("orderBy") && !key.equals("order")) {
+                    columnParams += 1;
+                    break;
+                }
+            }
+
+            queryBuilder.append(columnBuilder);
+            queryBuilder.append(" from covid_data");
+
+            if (columnParams > 0) {
+                queryBuilder.append(" where ");
+
+                i = 0;
+                for (String key : params.keySet()) {
+                    boolean isColumnParam = false;
+                    if (!key.equals("columns") && !key.equals("orderBy") && !key.equals("order")) {
+                        isColumnParam = true;
+                        queryBuilder.append(FreightStatUtils.COVID_DATA_PARAMS.get(key));
+                    }
+                    switch (key) {
+                        case "date":
+                            queryBuilder.append(" = str_to_date(\"");
+                            queryBuilder.append(params.get(key));
+                            queryBuilder.append("\", \"%Y-%m-%d\")");
+                            break;
+                        case "startDate":
+                            queryBuilder.append(" >= str_to_date(\"");
+                            queryBuilder.append(params.get(key));
+                            queryBuilder.append("\", \"%Y-%m-%d\")");
+                            break;
+                        case "endDate":
+                            queryBuilder.append(" <= str_to_date(\"");
+                            queryBuilder.append(params.get(key));
+                            queryBuilder.append("\", \"%Y-%m-%d\")");
+                            break;
+                        case "columns":
+                        case "orderBy":
+                        case "order":
+                            continue;
+                        default:
+                            queryBuilder.append(" = ");
+                            queryBuilder.append(params.get(key));
+                    }
+                    if (i < columnParams) {
+                        queryBuilder.append(" and ");
+                    }
+                    if (isColumnParam) {
+                        i += 1;
+                    }
+                }
+            }
+
+            if (params.containsKey("orderBy")) {
+                queryBuilder.append(" order by ");
+                String[] subparams = params.get("orderBy").split(",");
+                Arrays.stream(subparams).filter((String s) -> !FreightStatUtils.COVID_DATA_PARAMS.containsKey(s));
+                i = 0;
+                for (String subparam : subparams) {
+                    queryBuilder.append(FreightStatUtils.COVID_DATA_PARAMS.get(subparam));
+                    if (i < subparams.length - 1) {
+                        queryBuilder.append(", ");
+                    }
+                    i += 1;
+                }
+                if (params.containsKey("order")) {
+                    if (params.get("order").equals("asc")) {
+                        queryBuilder.append(" asc");
+                    } else if (params.get("order").equals("desc")) {
+                        queryBuilder.append(" desc");
+                    }
+                }
+            }
+        } else {
+            queryBuilder.append("* from covid_data");
+        }
+        this.limitResults(queryBuilder);
+        try {
+            this.useSchema();
+            return this.basicQuery(queryBuilder.toString());
         } catch (SQLException e) {
-            errorBuilder.append("The following exception occurred when querying COVID cases: ");
-            errorBuilder.append(e.toString());
+            errorBuilder.append("The following exception occurred when querying shipments: ");
+            errorBuilder.append(e);
             return errorBuilder.toString();
         }
+    }
+
+    @GetMapping("/api/monthlyCases")
+    public String monthlyCases() {
+        return this.basicQuery("select cases_month, sum(covid_cases) from covid_data group by cases_month order by cases_month;");
+    }
+
+    @GetMapping("/api/monthlyDeaths")
+    public String monthlyDeaths() {
+        return this.basicQuery("select cases_month, sum(covid_deaths) from covid_data group by cases_month order by cases_month;");
     }
 }

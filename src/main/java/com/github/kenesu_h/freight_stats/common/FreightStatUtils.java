@@ -46,6 +46,22 @@ public class FreightStatUtils {
         SHIPMENT_PARAMS = Collections.unmodifiableMap(map);
     }
 
+    public static Map<String, String> COVID_DATA_PARAMS;
+    static {
+        Map<String, String> map = new HashMap<>();
+        map.put("id", "covid_data_id");
+        map.put("state", "state");
+        map.put("covidCases", "covid_cases");
+        map.put("covidDeaths", "covid_deaths");
+        map.put("date", "cases_month");
+        map.put("startDate", "cases_month");
+        map.put("endDate", "cases_month");
+        map.put("columns", "");
+        map.put("orderBy", "order by");
+        map.put("order", "");
+        COVID_DATA_PARAMS = Collections.unmodifiableMap(map);
+    }
+
     // Thanks to https://stackoverflow.com/a/41453021
     public static String rsToJson(ResultSet rs) throws SQLException, JSONException {
         JSONArray json = new JSONArray();
