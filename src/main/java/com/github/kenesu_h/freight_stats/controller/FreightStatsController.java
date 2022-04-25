@@ -405,13 +405,13 @@ public class FreightStatsController {
         }
     }
 
-    @GetMapping("/api/monthlyCases")
-    public String monthlyCases() {
+    @GetMapping("/api/monthlyCase")
+    public String monthlyCase() {
         return this.basicQuery("select cases_month, sum(covid_cases) from covid_data group by cases_month order by cases_month;");
     }
 
-    @GetMapping("/api/monthlyDeaths")
-    public String monthlyDeaths() {
+    @GetMapping("/api/monthlyDeath")
+    public String monthlyDeath() {
         return this.basicQuery("select cases_month, sum(covid_deaths) from covid_data group by cases_month order by cases_month;");
     }
 }
